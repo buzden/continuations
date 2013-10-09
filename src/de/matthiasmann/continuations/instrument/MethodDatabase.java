@@ -273,7 +273,7 @@ public class MethodDatabase implements Log {
      * class or null if the class was not found
      */
     protected CheckInstrumentationVisitor checkClass(String className) {
-        InputStream is = cl.getResourceAsStream(className + ".class");
+        InputStream is = getResourceAsStream(className + ".class");
         if(is != null) {
             return checkFileAndClose(is, className);
         }
@@ -301,7 +301,7 @@ public class MethodDatabase implements Log {
     }
 
     private String extractSuperClass(String className) {
-        InputStream is = cl.getResourceAsStream(className + ".class");
+        InputStream is = getResourceAsStream(className + ".class");
         if(is != null) {
             try {
                 try {
@@ -363,6 +363,12 @@ public class MethodDatabase implements Log {
         return superClass;
     }
     
+    private InputStream getResourceAsStream(final String resourceName) {
+        final InputStream clIS = cl != null ? cl.getResourceAsStream(resourceName) : null;
+
+        return clIS != null ? clIS : Thread.currentThread().getContextClassLoader().getResourceAsStream(resourceName);
+    }
+
     public static boolean isJavaCore(String className) {
         return className.startsWith("java/") || className.startsWith("javax/") ||
                 className.startsWith("sun/") || className.startsWith("com/sun/");
