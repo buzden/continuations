@@ -1,0 +1,6 @@
+# IDEA-related
+/.idea
+/*.iml
+
+# THe output directory
+/build
