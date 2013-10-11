@@ -364,9 +364,9 @@ public class MethodDatabase implements Log {
     }
     
     private InputStream getResourceAsStream(final String resourceName) {
-        final InputStream clIS = cl != null ? cl.getResourceAsStream(resourceName) : null;
+        final InputStream clIS = Thread.currentThread().getContextClassLoader().getResourceAsStream(resourceName);
 
-        return clIS != null ? clIS : Thread.currentThread().getContextClassLoader().getResourceAsStream(resourceName);
+        return clIS != null ? clIS : (cl != null ? cl.getResourceAsStream(resourceName) : null);
     }
 
     private boolean haveClassloader() {
