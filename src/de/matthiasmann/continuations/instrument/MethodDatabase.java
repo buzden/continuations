@@ -173,7 +173,7 @@ public class MethodDatabase implements Log {
             if(entry == null) {
                 entry = CLASS_NOT_FOUND;
                 
-                if(cl != null) {
+                if(haveClassloader()) {
                     log(LogLevel.INFO, "Trying to read class: %s", curClassName);
 
                     CheckInstrumentationVisitor civ = checkClass(curClassName);
@@ -367,6 +367,10 @@ public class MethodDatabase implements Log {
         final InputStream clIS = cl != null ? cl.getResourceAsStream(resourceName) : null;
 
         return clIS != null ? clIS : Thread.currentThread().getContextClassLoader().getResourceAsStream(resourceName);
+    }
+
+    private boolean haveClassloader() {
+        return cl != null || Thread.currentThread().getContextClassLoader() != null;
     }
 
     public static boolean isJavaCore(String className) {
