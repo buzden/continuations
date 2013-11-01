@@ -28,21 +28,12 @@
  */
 package de.matthiasmann.continuations.instrument;
 
-import de.matthiasmann.continuations.SuspendExecution;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.util.ArrayList;
-import org.apache.tools.ant.BuildException;
-import org.apache.tools.ant.DirectoryScanner;
-import org.apache.tools.ant.Project;
-import org.apache.tools.ant.Task;
-import org.apache.tools.ant.types.FileSet;
-import org.objectweb.asm.ClassReader;
-import org.objectweb.asm.ClassVisitor;
-import org.objectweb.asm.ClassWriter;
-import org.objectweb.asm.util.CheckClassAdapter;
+import de.matthiasmann.continuations.*;
+import org.apache.tools.ant.*;
+import org.apache.tools.ant.types.*;
+
+import java.io.*;
+import java.util.*;
 
 /**
  * <p>Instrumentation ANT task</p>
@@ -147,44 +138,15 @@ public class InstrumentationTask extends Task {
             db.log(LogLevel.INFO, "Instrumenting " + db.getWorkList().size() + " classes");
 
             for(File f : db.getWorkList()) {
-                instrumentClass(db, f);
+                try {
+                    InstrumentationHelper.instrumentClass(db, f, check, writeClasses);
+                } catch (IOException ex) {
+                    throw new BuildException("Instrumenting file " + f, ex);
+                }
             }
         } catch (UnableToInstrumentException ex) {
             log(ex.getMessage());
             throw new BuildException(ex.getMessage(), ex);
-        }
-    }
-    
-    private void instrumentClass(MethodDatabase db, File f) {
-        db.log(LogLevel.INFO, "Instrumenting class %s", f);
-        
-        try {
-            ClassReader r;
-            
-            FileInputStream fis = new FileInputStream(f);
-            try {
-                r = new ClassReader(fis);
-            } finally {
-                fis.close();
-            }
-
-            ClassWriter cw = new DBClassWriter(db, r);
-            ClassVisitor cv = check ? new CheckClassAdapter(cw) : cw;
-            InstrumentClass ic = new InstrumentClass(cv, db, false);
-            r.accept(ic, ClassReader.SKIP_FRAMES);
-
-            byte[] newClass = cw.toByteArray();
-
-            if(writeClasses) {
-                FileOutputStream fos = new FileOutputStream(f);
-                try {
-                    fos.write(newClass);
-                } finally {
-                    fos.close();
-                }
-            }
-        } catch (IOException ex) {
-            throw new BuildException("Instrumenting file " + f, ex);
         }
     }
 }
