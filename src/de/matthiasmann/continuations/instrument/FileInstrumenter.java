@@ -1,7 +1,5 @@
 package de.matthiasmann.continuations.instrument;
 
-import com.sun.istack.internal.*;
-
 import java.io.*;
 import java.util.*;
 
@@ -56,7 +54,7 @@ public class FileInstrumenter {
                 public Iterator<File> iterator() {
                     return new Iterator<File>() {
                         //@ invariant nestedFiles != null;
-                        final @NotNull File[] nestedFiles = file.listFiles();
+                        final File[] nestedFiles = file.listFiles();
 
                         //@ invariant 0 <= currIndex <= nestedFiles.length;
                         int currIndex = 0;
