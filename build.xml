@@ -82,7 +82,7 @@
         </continuations>
     </target>
     
-    <target name="build-full-jar" depends="instrument-classes">
+    <target name="build-full-jar" depends="compile,instrument-classes">
         <jar jarfile="${dist.dir}/Continuations_full_${build.date}.jar"
             basedir="${build.classes.dir}">
             <manifest>
