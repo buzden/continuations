@@ -61,15 +61,12 @@
  */
 package de.matthiasmann.continuations.instrument;
 
-import java.lang.instrument.ClassFileTransformer;
-import java.lang.instrument.IllegalClassFormatException;
-import java.lang.instrument.Instrumentation;
-import java.security.ProtectionDomain;
+import org.objectweb.asm.*;
+import org.objectweb.asm.util.*;
 
-import org.objectweb.asm.ClassReader;
-import org.objectweb.asm.ClassVisitor;
-import org.objectweb.asm.ClassWriter;
-import org.objectweb.asm.util.CheckClassAdapter;
+import java.io.*;
+import java.lang.instrument.*;
+import java.security.*;
 
 /*
  * Created on Nov 21, 2010
@@ -128,11 +125,44 @@ public class JavaAgent {
 
     static byte[] instrumentClass(MethodDatabase db, byte[] data, boolean check) {
         ClassReader r = new ClassReader(data);
+
+        final String className = r.getClassName().replaceAll("\\.", "/");
+        writeToFile(data, "/tmp/cont-agent/orig/" + className);
+
         ClassWriter cw = new DBClassWriter(db, r);
         ClassVisitor cv = check ? new CheckClassAdapter(cw) : cw;
         InstrumentClass ic = new InstrumentClass(cv, db, false);
         r.accept(ic, ClassReader.SKIP_FRAMES);
-        return cw.toByteArray();
+
+        final byte[] res = cw.toByteArray();
+
+        writeToFile(res, "/tmp/cont-agent/inst/" + className);
+
+        return res;
+    }
+
+    private static void writeToFile(final byte[] data, final String filename) {
+        try {
+            final File file = new File(filename);
+
+            final File folder = file.getParentFile();
+            if (!folder.exists() && !folder.mkdirs()) {
+                throw new IOException("Unable to create folders for path " + folder);
+            }
+
+            final FileOutputStream orig = new FileOutputStream(file);
+            try {
+                orig.write(data);
+            } finally {
+                orig.close();
+            }
+        } catch (final RuntimeException ex) {
+            throw ex;
+        } catch (final Error ex) {
+            throw ex;
+        } catch (final Throwable ex) {
+            throw new RuntimeException(ex);
+        }
     }
 
     private static class Transformer implements ClassFileTransformer {
