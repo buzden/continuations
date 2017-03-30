@@ -115,6 +115,7 @@ public class InstrumentationTask extends Task {
             }
             public void error(String msg, Exception ex) {
                 InstrumentationTask.this.log("ERROR: "+msg, ex, Project.MSG_ERR);
+                ex.printStackTrace();
             }
         });
         
