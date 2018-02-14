@@ -47,6 +47,7 @@ public class DBClassWriter extends ClassWriter {
     
     @Override
     protected String getCommonSuperClass(String type1, String type2) {
-        return db.getCommonSuperClass(type1, type2);
+        final String c = db.getCommonSuperClass(type1, type2);
+        return c != null ? c : "java/lang/Object";
     }
 }
